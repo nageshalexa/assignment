@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.airfranceklm.fasttrack.assignment.resources.Holiday;
@@ -16,6 +18,7 @@ import com.airfranceklm.fasttrack.assignment.service.HolidayService;
 
 @Service
 public class HolidayServiceImpl implements HolidayService {
+	private static final Logger logger = LogManager.getLogger(HolidayServiceImpl.class);
 	private static List<Schedules> schedulesList = new ArrayList<Schedules>();
 
 	static {
@@ -48,25 +51,25 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	@Override
-	public List<Schedules> saveSchedule(Schedules scheduleForSave) {
+	public List<Schedules> saveSchedule(Schedules scheduleforsave) {
 
-		LocalDate Startofschedule = converTolocalDate(scheduleForSave);
+		LocalDate startofschedule = converToLocalDate(scheduleforsave);
 
-		if (checkanyOverlap(Startofschedule) && gapbetweenTwoholidays(Startofschedule)) {
+		if (checkanyOverlap(startofschedule) && gapBetweenTwoHolidays(startofschedule)) {
 
-			LocalDate Currentdate = LocalDate.now();
-			if (Startofschedule.isAfter(Currentdate)) {
-				long days = ChronoUnit.DAYS.between(Currentdate, Startofschedule);
+			LocalDate currentdate = LocalDate.now();
+			if (startofschedule.isAfter(currentdate)) {
+				long days = ChronoUnit.DAYS.between(currentdate, startofschedule);
 
 				if (days >= 5) {
-					schedulesList.add(scheduleForSave);
+					schedulesList.add(scheduleforsave);
 				} else {
-					System.out.println("A holiday must be planned at least 5 working days before the start date");
+					logger.info("A holiday must be planned at least 5 working days before the start date");
 				}
 
 			}
 		} else {
-			System.out.println(
+			logger.info(
 					"Holidays must not overlap Or There should be a gap of at least 3 working days between holidays");
 		}
 
@@ -86,15 +89,15 @@ public class HolidayServiceImpl implements HolidayService {
 	@Override
 	public List<Schedules> deleteSchedule(String holidayId, Schedules scheduledelete) {
 
-		LocalDate Startofschedule = converTolocalDate(scheduledelete);
-		LocalDate Currentdate = LocalDate.now();
-		long days = ChronoUnit.DAYS.between(Currentdate, Startofschedule);
+		LocalDate startofschedule = converToLocalDate(scheduledelete);
+		LocalDate currentdate = LocalDate.now();
+		long days = ChronoUnit.DAYS.between(currentdate, startofschedule);
 
 		if (days >= 5) {
 			Predicate<Schedules> condition = schedules -> schedules.getHolidayId().equals(holidayId);
 			schedulesList.removeIf(condition);
 		} else {
-			System.out.println("A holiday must be cancelled at least 5 working days before the start date");
+			logger.info("A holiday must be cancelled at least 5 working days before the start date");
 		}
 
 		return schedulesList;
@@ -112,10 +115,9 @@ public class HolidayServiceImpl implements HolidayService {
 		return true;
 	}
 
-	private boolean gapbetweenTwoholidays(LocalDate startofschedule) {
-		for (Schedules ExistingSchedules : schedulesList) {
-			System.out.println("test" + converTolocalDate(ExistingSchedules) + "" + startofschedule);
-			long days = ChronoUnit.DAYS.between(converTolocalDate(ExistingSchedules), startofschedule);
+	private boolean gapBetweenTwoHolidays(LocalDate startofschedule) {
+		for (Schedules existingschedules : schedulesList) {
+			long days = ChronoUnit.DAYS.between(converToLocalDate(existingschedules), startofschedule);
 			if (days >= 3) {
 				return true;
 			}
@@ -124,11 +126,11 @@ public class HolidayServiceImpl implements HolidayService {
 		return false;
 	}
 
-	private LocalDate converTolocalDate(Schedules scheduleForSave) {
+	private LocalDate converToLocalDate(Schedules scheduleForSave) {
 		ZonedDateTime result = ZonedDateTime.parse(scheduleForSave.getHoliday().getStartOfHoliday(),
 				DateTimeFormatter.ISO_DATE_TIME);
-		LocalDate Startofschedule = result.toLocalDate();
-		return Startofschedule;
+		LocalDate startofschedule = result.toLocalDate();
+		return startofschedule;
 	}
 
 }
