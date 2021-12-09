@@ -19,7 +19,7 @@ import com.airfranceklm.fasttrack.assignment.service.impl.HolidayServiceImpl;
 @Repository
 public class HolidayDaoImpl {
 	private static final Logger logger = LogManager.getLogger(HolidayDaoImpl.class);
-	private static List<Schedules> schedulesList = new ArrayList<Schedules>();
+	private static List<Schedules> schedulesList = new ArrayList<>();
 
 	static {
 		Schedules schedules1 = new Schedules();
